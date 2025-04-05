@@ -642,7 +642,7 @@ body {
 
 .student-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 从150px增加到180px */
     gap: 10px;
     margin-bottom: 20px;
 }
@@ -652,7 +652,8 @@ body {
     border-radius: 4px;
     padding: 10px;
     transition: var(--transition);
-    position: relative; /* 添加相对定位，以便放置删除按钮 */
+    position: relative;
+    min-width: 180px; /* 添加最小宽度 */
 }
 
 .dark-mode .student-card {
@@ -722,14 +723,16 @@ body {
 
 .student-status {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
+    flex-wrap: nowrap; /* 从wrap改为nowrap，防止换行 */
+    gap: 8px; /* 增加间距 */
+    justify-content: space-between; /* 两端对齐 */
 }
 
 .status-checkbox {
     display: flex;
     align-items: center;
     font-size: 0.8rem;
+    white-space: nowrap; /* 防止文字换行 */
 }
 
 .status-checkbox input {
@@ -802,7 +805,11 @@ body {
     }
     
     .student-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 从120px增加到180px */
+    }
+    
+    .student-status {
+        flex-wrap: nowrap; /* 确保在小屏幕上也不换行 */
     }
 }
 
