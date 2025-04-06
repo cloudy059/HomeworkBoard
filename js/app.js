@@ -128,6 +128,9 @@ function loadData() {
             homeworkData[subject.id] = [];
         });
     }
+    
+    // 加载未完成且未过期的作业
+    loadPendingHomework();
 
     // 加载出勤数据
     const savedAttendanceData = localStorage.getItem(`attendance_${dateString}`);
@@ -457,12 +460,90 @@ function createSubjectCard(subject) {
     return card;
 }
 
+// 加载未完成且未过期的作业
+function loadPendingHomework() {
+    // 获取所有localStorage中的键
+    const keys = Object.keys(localStorage);
+    const today = new Date(currentDate);
+    today.setHours(0, 0, 0, 0);
+    
+    // 筛选出作业相关的键
+    const homeworkKeys = keys.filter(key => key.startsWith('homework_'));
+    
+    // 遍历所有作业数据
+    homeworkKeys.forEach(key => {
+        // 跳过当前日期的作业数据，因为已经加载过了
+        const keyDate = key.replace('homework_', '');
+        if (keyDate === formatDate(currentDate)) {
+            return;
+        }
+        
+        // 解析日期，确保只加载当前日期之前的作业
+        const keyDateObj = new Date(keyDate);
+        keyDateObj.setHours(0, 0, 0, 0);
+        
+        if (keyDateObj < today) {
+            const savedData = JSON.parse(localStorage.getItem(key));
+            
+            // 遍历每个学科
+            Object.keys(savedData).forEach(subjectId => {
+                // 确保当前homeworkData中有这个学科
+                if (!homeworkData[subjectId]) {
+                    homeworkData[subjectId] = [];
+                }
+                
+                // 筛选未完成且未过期的作业
+                const pendingHomework = savedData[subjectId].filter(homework => {
+                    // 如果作业已完成，不需要继续显示
+                    if (homework.completed) {
+                        return false;
+                    }
+                    
+                    // 如果没有截止日期，则一直显示
+                    if (!homework.deadline) {
+                        return true;
+                    }
+                    
+                    // 如果有截止日期，检查是否已过期
+                    const deadlineDate = new Date(homework.deadline);
+                    deadlineDate.setHours(23, 59, 59, 999); // 设置为当天结束
+                    return deadlineDate >= today;
+                });
+                
+                // 将未完成且未过期的作业添加到当前日期的作业中
+                // 使用Map来防止重复添加相同ID的作业
+                const homeworkMap = new Map();
+                
+                // 先添加当前日期的作业
+                homeworkData[subjectId].forEach(hw => {
+                    homeworkMap.set(hw.id, hw);
+                });
+                
+                // 再添加历史未完成作业
+                pendingHomework.forEach(hw => {
+                    // 如果当前日期没有相同ID的作业，则添加
+                    if (!homeworkMap.has(hw.id)) {
+                        homeworkMap.set(hw.id, {...hw, fromPreviousDay: true});
+                    }
+                });
+                
+                // 更新homeworkData
+                homeworkData[subjectId] = Array.from(homeworkMap.values());
+            });
+        }
+    });
+}
+
 // 创建作业项
 function createHomeworkItem(homework, subjectId) {
     const item = document.createElement('li');
     item.className = 'homework-item';
     if (homework.completed) {
         item.classList.add('homework-completed');
+    }
+    // 如果是从之前日期加载的作业，添加特殊样式
+    if (homework.fromPreviousDay) {
+        item.classList.add('homework-previous-day');
     }
     
     const checkbox = document.createElement('input');
@@ -636,9 +717,44 @@ function toggleHomeworkCompletion(subjectId, homeworkId) {
     const index = homeworkData[subjectId].findIndex(h => h.id === homeworkId);
     if (index !== -1) {
         homeworkData[subjectId][index].completed = !homeworkData[subjectId][index].completed;
+        
+        // 如果作业来自之前的日期，需要更新原始日期的作业数据
+        if (homeworkData[subjectId][index].fromPreviousDay) {
+            updateOriginalHomeworkData(subjectId, homeworkId, homeworkData[subjectId][index].completed);
+        }
+        
         saveHomeworkData();
         renderSubjects();
         updateHomeworkStats();
+    }
+}
+
+// 更新原始日期的作业数据
+function updateOriginalHomeworkData(subjectId, homeworkId, completed) {
+    // 获取所有localStorage中的键
+    const keys = Object.keys(localStorage);
+    
+    // 筛选出作业相关的键
+    const homeworkKeys = keys.filter(key => key.startsWith('homework_'));
+    
+    // 遍历所有作业数据查找原始作业
+    for (const key of homeworkKeys) {
+        if (key === `homework_${formatDate(currentDate)}`) {
+            continue; // 跳过当前日期
+        }
+        
+        const savedData = JSON.parse(localStorage.getItem(key));
+        
+        // 检查该日期的数据中是否包含目标作业
+        if (savedData[subjectId]) {
+            const index = savedData[subjectId].findIndex(h => h.id === homeworkId);
+            if (index !== -1) {
+                // 更新完成状态
+                savedData[subjectId][index].completed = completed;
+                localStorage.setItem(key, JSON.stringify(savedData));
+                break; // 找到并更新后退出循环
+            }
+        }
     }
 }
 
