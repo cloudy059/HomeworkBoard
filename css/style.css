@@ -26,6 +26,9 @@
 }
 
 body {
+	background-image: url('./background.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
     font-size: var(--font-size-base);
     transition: var(--transition);
 }
@@ -443,10 +446,25 @@ body {
     animation: modalFadeIn 0.3s;
 }
 
+/* 隐藏值日选择区域 */
+.duty-selection {
+    display: none; /* 从flex改为none，隐藏这个区域 */
+}
+
+/* 调整出勤模态框内容的布局，移除底部空间 */
 .attendance-modal-content {
-    max-width: 1000px; /* 从800px增加到1000px */
-    max-height: 85vh; /* 从80vh增加到85vh */
+    max-width: 1000px;
+    max-height: 85vh;
     overflow-y: auto;
+    padding-bottom: 20px; /* 添加底部内边距，使内容与底部有一定距离 */
+}
+
+/* 调整学生网格的底部边距，移除多余空间 */
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px; /* 从20px减少到10px */
 }
 
 .dark-mode .modal-content {
@@ -647,28 +665,33 @@ body {
     margin-bottom: 20px;
 }
 
+/* 学生卡片中的值日状态样式 */
+.student-duty-status {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #eee;
+}
+
+.dark-mode .student-duty-status {
+    border-top-color: #333;
+}
+
+/* 调整学生卡片的高度和内边距，以容纳更多内容 */
 .student-card {
     background-color: #f9f9f9;
     border-radius: 4px;
-    padding: 10px;
+    padding: 12px;
     transition: var(--transition);
     position: relative;
-    min-width: 180px; /* 添加最小宽度 */
+    min-width: 180px;
+    min-height: 120px; /* 增加最小高度 */
 }
 
-.dark-mode .student-card {
-    background-color: #2a2a2a;
-}
-
-.student-card:hover {
-    background-color: #f0f0f0;
-}
-
-.dark-mode .student-card:hover {
-    background-color: #333;
-}
-
-/* 添加删除按钮样式 */
+/* 调整学生卡片中的删除按钮位置 */
 .student-delete-btn {
     position: absolute;
     top: 5px;
@@ -686,6 +709,7 @@ body {
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 2; /* 确保删除按钮在最上层 */
 }
 
 .student-card:hover .student-delete-btn {
