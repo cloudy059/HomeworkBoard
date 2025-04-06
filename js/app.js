@@ -724,7 +724,7 @@ function deleteSubject(subjectId) {
 // 打开出勤模态框
 function openAttendanceModal() {
     renderStudentGrid();
-    renderDutySelections();
+    // 移除了renderDutySelections()的调用
     attendanceModalEl.style.display = 'flex';
 }
 
@@ -771,6 +771,7 @@ function createStudentCard(student) {
     nameContainer.appendChild(name);
     nameContainer.appendChild(number);
     
+    // 出勤状态复选框容器
     const status = document.createElement('div');
     status.className = 'student-status';
     
@@ -829,15 +830,55 @@ function createStudentCard(student) {
     status.appendChild(lateLabel);
     status.appendChild(absentLabel);
     
+    // 添加值日勾选项容器
+    const dutyStatus = document.createElement('div');
+    dutyStatus.className = 'student-duty-status';
+    
+    // 班级值日复选框
+    const classDutyLabel = document.createElement('label');
+    classDutyLabel.className = 'status-checkbox';
+    const classDutyCheckbox = document.createElement('input');
+    classDutyCheckbox.type = 'checkbox';
+    classDutyCheckbox.name = 'class-duty';
+    classDutyCheckbox.checked = classDuty.includes(student.id);
+    classDutyCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            // 如果选中班级值日，取消该学生的包干区值日
+            card.querySelector('input[name="area-duty"]').checked = false;
+        }
+    });
+    classDutyLabel.appendChild(classDutyCheckbox);
+    classDutyLabel.appendChild(document.createTextNode('班级值日'));
+    
+    // 包干区值日复选框
+    const areaDutyLabel = document.createElement('label');
+    areaDutyLabel.className = 'status-checkbox';
+    const areaDutyCheckbox = document.createElement('input');
+    areaDutyCheckbox.type = 'checkbox';
+    areaDutyCheckbox.name = 'area-duty';
+    areaDutyCheckbox.checked = areaDuty.includes(student.id);
+    areaDutyCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            // 如果选中包干区值日，取消该学生的班级值日
+            card.querySelector('input[name="class-duty"]').checked = false;
+        }
+    });
+    areaDutyLabel.appendChild(areaDutyCheckbox);
+    areaDutyLabel.appendChild(document.createTextNode('包干区值日'));
+    
+    dutyStatus.appendChild(classDutyLabel);
+    dutyStatus.appendChild(areaDutyLabel);
+    
     card.appendChild(nameContainer);
     card.appendChild(status);
+    card.appendChild(dutyStatus); // 添加值日勾选项
     card.appendChild(deleteBtn); // 添加删除按钮到卡片
     card.dataset.studentId = student.id;
     
     return card;
 }
 
-// 添加删除学生的函数
+// 删除学生的函数
 function deleteStudent(studentId) {
     // 从学生数组中删除
     const index = students.findIndex(s => s.id === studentId);
@@ -861,7 +902,10 @@ function deleteStudent(studentId) {
         
         // 重新渲染
         renderStudentGrid();
-        renderDutySelections();
+        // 检查元素是否存在再调用renderDutySelections
+        if (classDutySelectionEl && areaDutySelectionEl) {
+            renderDutySelections();
+        }
         updateAttendanceStats();
     }
 }
@@ -880,6 +924,16 @@ function renderDutySelections() {
         classDutyCheckbox.name = 'class-duty';
         classDutyCheckbox.value = student.id;
         classDutyCheckbox.checked = classDuty.includes(student.id);
+        // 添加互斥逻辑
+        classDutyCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // 如果选中班级值日，取消该学生的包干区值日
+                const areaDutyCheckbox = document.querySelector(`input[name="area-duty"][value="${student.id}"]`);
+                if (areaDutyCheckbox) {
+                    areaDutyCheckbox.checked = false;
+                }
+            }
+        });
         classDutyLabel.appendChild(classDutyCheckbox);
         classDutyLabel.appendChild(document.createTextNode(student.name));
         classDutySelectionEl.appendChild(classDutyLabel);
@@ -892,6 +946,16 @@ function renderDutySelections() {
         areaDutyCheckbox.name = 'area-duty';
         areaDutyCheckbox.value = student.id;
         areaDutyCheckbox.checked = areaDuty.includes(student.id);
+        // 添加互斥逻辑
+        areaDutyCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // 如果选中包干区值日，取消该学生的班级值日
+                const classDutyCheckbox = document.querySelector(`input[name="class-duty"][value="${student.id}"]`);
+                if (classDutyCheckbox) {
+                    classDutyCheckbox.checked = false;
+                }
+            }
+        });
         areaDutyLabel.appendChild(areaDutyCheckbox);
         areaDutyLabel.appendChild(document.createTextNode(student.name));
         areaDutySelectionEl.appendChild(areaDutyLabel);
@@ -932,7 +996,10 @@ function addStudent() {
     
     closeModal(addStudentModalEl);
     renderStudentGrid();
-    renderDutySelections();
+    // 检查元素是否存在再调用renderDutySelections
+    if (classDutySelectionEl && areaDutySelectionEl) {
+        renderDutySelections();
+    }
 }
 
 // 导入学生
@@ -960,7 +1027,10 @@ function importStudents() {
                         
                         saveStudents();
                         renderStudentGrid();
-                        renderDutySelections();
+                        // 检查元素是否存在再调用renderDutySelections
+                        if (classDutySelectionEl && areaDutySelectionEl) {
+                            renderDutySelections();
+                        }
                         updateAttendanceStats();
                         
                         alert('导入成功');
@@ -969,6 +1039,7 @@ function importStudents() {
                     alert('导入的文件格式不正确');
                 }
             } catch (error) {
+                console.error('导入学生数据时出错:', error);
                 alert('导入失败: ' + error.message);
             }
         };
@@ -1015,7 +1086,10 @@ function clearAttendance() {
         saveAreaDuty();
         
         renderStudentGrid();
-        renderDutySelections();
+        // 检查元素是否存在再调用renderDutySelections
+        if (classDutySelectionEl && areaDutySelectionEl) {
+            renderDutySelections();
+        }
         updateAttendanceStats();
     }
 }
@@ -1039,7 +1113,10 @@ function clearStudents() {
         saveAreaDuty();
         
         renderStudentGrid();
-        renderDutySelections();
+        // 检查元素是否存在再调用renderDutySelections
+        if (classDutySelectionEl && areaDutySelectionEl) {
+            renderDutySelections();
+        }
         updateAttendanceStats();
     }
 }
@@ -1050,6 +1127,8 @@ function saveAttendance() {
     const leaveIds = [];
     const lateIds = [];
     const absentIds = [];
+    const newClassDuty = [];
+    const newAreaDuty = [];
     
     document.querySelectorAll('.student-card').forEach(card => {
         const studentId = card.dataset.studentId;
@@ -1065,6 +1144,15 @@ function saveAttendance() {
         if (card.querySelector('input[name="absent"]').checked) {
             absentIds.push(studentId);
         }
+        
+        // 收集值日生数据
+        if (card.querySelector('input[name="class-duty"]').checked) {
+            newClassDuty.push(studentId);
+        }
+        
+        if (card.querySelector('input[name="area-duty"]').checked) {
+            newAreaDuty.push(studentId);
+        }
     });
     
     attendanceData = {
@@ -1072,17 +1160,6 @@ function saveAttendance() {
         late: lateIds,
         absent: absentIds
     };
-    
-    // 收集值日生数据
-    const newClassDuty = [];
-    document.querySelectorAll('input[name="class-duty"]:checked').forEach(checkbox => {
-        newClassDuty.push(checkbox.value);
-    });
-    
-    const newAreaDuty = [];
-    document.querySelectorAll('input[name="area-duty"]:checked').forEach(checkbox => {
-        newAreaDuty.push(checkbox.value);
-    });
     
     classDuty = newClassDuty;
     areaDuty = newAreaDuty;
