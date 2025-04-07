@@ -691,6 +691,12 @@ body {
     min-height: 120px; /* 增加最小高度 */
 }
 
+/* 添加夜间模式下学生卡片的样式 */
+.dark-mode .student-card {
+    background-color: #f9f9f9; /* 保持浅色背景 */
+    color: #333333; /* 文字颜色改为黑色 */
+}
+
 /* 调整学生卡片中的删除按钮位置 */
 .student-delete-btn {
     position: absolute;
