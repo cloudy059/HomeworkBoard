@@ -673,7 +673,7 @@ body {
     justify-content: space-between;
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px dashed #eee;
+    border-top: 1px dashed #aaa;
 }
 
 .dark-mode .student-duty-status {
