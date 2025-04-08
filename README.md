@@ -17,12 +17,8 @@
 - 点击右侧的出勤情况面板，跳窗设置出勤状况管理，导入/清空学生名单按钮，学生以卡片形式显示，卡片内含“请假”“迟到”“旷课”“值日”勾选框
 - 值日生：分两组，一组负责班级，另一组负责包干区
 
-## 软件截图
-### 主界面
-![屏幕截图 2025-04-05 083602](https://github.com/user-attachments/assets/b05980b4-d464-465e-b8df-570a1556d0ed)
-
-### 如何部署？   
-- 您可以点击查看 [ExamShowboard网页端 部署文档](https://docs.examaware.tech/web/web-deploy.html)了解详细的部署教程。   
+### 软件截图
+![{86E9ED21-3173-48DD-9593-7B2AC43BCA5B}](https://github.com/user-attachments/assets/2eb059c4-624d-4465-b566-34155bd37415)
 
 ### 开发说明
 - 用Trae迭代出来的，自己是刚接触网页制作的小白。
