@@ -19,6 +19,3 @@
 
 ## 软件截图
 ![{86E9ED21-3173-48DD-9593-7B2AC43BCA5B}](https://github.com/user-attachments/assets/2eb059c4-624d-4465-b566-34155bd37415)
-
-## 开发说明
-- 用Trae迭代出来的，自己是刚接触网页制作的小白。
